@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>VTA QS LMS (PHP) - Ninthavur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<svg style="display:none">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11.5V17c0 1.4 2.7 2.8 6 2.8s6-1.4 6-2.8v-5.5"/><path d="M21 9v6"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6.2 6.5-6.2s6.5 2.6 6.5 6.2"/><circle cx="17.5" cy="9" r="2.4"/><path d="M16 13.8c2.6.2 5.5 1.9 5.5 6.2"/></symbol>
+  <symbol id="i-board" viewBox="0 0 24 24"><rect x="2.5" y="4" width="16" height="12" rx="1.5"/><path d="M6.5 20h8M10.5 16v4"/><circle cx="19.5" cy="17" r="2.7"/><path d="M18 16.3l1 1 2-1.8"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="4.5" y="4" width="15" height="17" rx="2"/><path d="M9 3.2h6v3H9z"/><path d="m8.5 13 2.2 2.2 4.3-4.4"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4.5 5a2 2 0 0 1 2-2H18v17H6.5a2 2 0 0 0-2 2z"/><path d="M18 3.2V20"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M12.5 20.5h9"/><path d="M17 3.5a2.1 2.1 0 0 1 3 3L8.5 18l-4.3 1.1L5.3 14.8z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-8"/><path d="M2.5 20h19"/></symbol>
+  <symbol id="i-week" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 9.5h18M8.5 4.5v15M14 4.5v15"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2.2H6.5a2 2 0 0 0-2 2v15.6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8z"/><path d="M14 2.2V8h5.5"/></symbol>
+  <symbol id="i-filepdf" viewBox="0 0 24 24"><path d="M14 2.2H6.5a2 2 0 0 0-2 2v15.6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8z"/><path d="M14 2.2V8h5.5"/><path d="M7.5 17.5v-4h1.4c.9 0 1.5.6 1.5 1.4s-.6 1.4-1.5 1.4H7.5M12 17.5v-4h1c1.1 0 1.9.9 1.9 2s-.8 2-1.9 2h-1M17 17.5v-4h2.2M17 15.6h1.6" stroke-width="1.1"/></symbol>
+  <symbol id="i-horn" viewBox="0 0 24 24"><path d="M3 10.5v4h3.6l6 3.8V6.7l-6 3.8z"/><path d="M17.5 8.3a4.6 4.6 0 0 1 0 8.4"/><path d="M4 18.5l1 3"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="13" rx="2"/><path d="M8.5 7V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2"/><path d="M2.5 13h19"/></symbol>
+  <symbol id="i-calcheck" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4.3"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.5-4.5"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.2A8.5 8.5 0 1 1 9.8 4a7 7 0 0 0 10.2 10.2z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8.5a6 6 0 0 1 12 0c0 5.2 2 6.5 2 6.5H4s2-1.3 2-6.5"/><path d="M9.5 18.5a2.5 2.5 0 0 0 5 0"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-4 3.3-6.8 7.5-6.8s7.5 2.8 7.5 6.8"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16.5 16.5 4.5-4.5-4.5-4.5"/><path d="M21 12H9.5"/></symbol>
+  <symbol id="i-enter" viewBox="0 0 24 24"><path d="M14 21h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-4"/><path d="m7.5 16.5-4.5-4.5 4.5-4.5"/><path d="M3 12h11.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4.5v15M4.5 12h15"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17.5 3.5a2.1 2.1 0 0 1 3 3L9 18l-4.3 1.1L5.8 14.7z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V4.8c0-.6.5-1.1 1.1-1.1h2.8c.6 0 1.1.5 1.1 1.1V7"/><path d="M6.5 7 7.3 19.3a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9L17.5 7"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.5v11.5M7.5 11l4.5 4.5L16.5 11"/><path d="M4.5 19.5h15"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="m5 5 14 14M19 5 5 19"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3.5h11L20.5 8v12a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M8 3.5V9h8V3.5M7.5 21v-6.5h9V21" fill="none"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M21.5 2.5 11 13"/><path d="M21.5 2.5 15 21.5l-4-8.5-8.5-4z"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18.5h6M10 21.5h4"/><path d="M12 2.5A6.5 6.5 0 0 0 8 14c1 .8 1.5 1.7 1.5 2.9h5c0-1.2.5-2.1 1.5-2.9a6.5 6.5 0 0 0-4-11.5z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6.5 8.5V3.5h11v5"/><rect x="3" y="8.5" width="18" height="8" rx="1.5"/><path d="M6.5 15.5h11v5.5h-11z"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V3.5M7.5 8l4.5-4.5L16.5 8"/><path d="M4.5 19.5h15"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.3"/><path d="M11 12 20 3M16.5 6.5l2.7 2.7M13.5 9.5l2 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12.5 5.5 5.5L20.5 6.5"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11.8A7 7 0 0 0 5 9.2C5 14.7 12 21 12 21z"/><circle cx="12" cy="9.2" r="2.4"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17.3l-5.4 3.1 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+  <symbol id="i-cert" viewBox="0 0 24 24"><circle cx="12" cy="9" r="5.5"/><path d="m8.5 13.5-1.8 7 5.3-3 5.3 3-1.8-7"/></symbol>
+  <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 11A8 8 0 1 0 18.5 16.5"/><path d="M20 5v6h-6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M6 4.5v15l13-7.5z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/></symbol>
+</svg>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- LOGIN PAGE -->
+<div class="login-page open" id="loginPage">
+  <div class="login-box">
+    <div class="brand-row"><div class="brand-logo-img"><img src="log.png" alt="VTA QS LMS"></div></div>
+
+    <div class="login-error" id="loginError"></div>
+
+    <div id="loginFormWrap">
+      <input type="email" id="loginEmail" placeholder="Email">
+      <input type="password" id="loginPass" placeholder="Password">
+      <button class="btn btn-gold" id="loginBtn"><svg class="icon sm" style="stroke:#fff"><use href="#i-enter"/></svg> Login</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-logo-img"><img src="log.png" alt="VTA QS LMS"></div><button class="sidebar-close-btn mobile-toggle" id="sidebarCloseBtn"><svg class="icon"><use href="#i-x"/></svg></button></div>
+
+    <div class="nav-title">Overview</div>
+    <nav class="nav">
+      <a class="active" data-page="dashboard"><svg class="icon"><use href="#i-grid"/></svg> Dashboard</a>
+    </nav>
+
+    <div class="nav-title">Academics</div>
+    <nav class="nav" id="mainNav">
+      <a data-page="mycourses" id="navMyCourses"><svg class="icon"><use href="#i-cap"/></svg> My Courses</a>
+      <a data-page="students"><svg class="icon"><use href="#i-users"/></svg> Students</a>
+      <a data-page="lectures"><svg class="icon"><use href="#i-board"/></svg> Lectures</a>
+      <a data-page="timetable"><svg class="icon"><use href="#i-week"/></svg> Timetable</a>
+      <a data-page="attendance" data-roles="admin,student"><svg class="icon"><use href="#i-clip"/></svg> Attendance</a>
+      <a data-page="diary" data-roles="admin,student"><svg class="icon"><use href="#i-book"/></svg> Daily Diary</a>
+    </nav>
+
+    <div class="nav-title">Assessment</div>
+    <nav class="nav">
+      <a data-page="assignments"><svg class="icon"><use href="#i-pen"/></svg> Assignments</a>
+      <a data-page="exams"><svg class="icon"><use href="#i-cal"/></svg> Exams</a>
+      <a data-page="results"><svg class="icon"><use href="#i-chart"/></svg> Results</a>
+    </nav>
+
+    <div class="nav-title">Resources</div>
+    <nav class="nav">
+      <a data-page="notes"><svg class="icon"><use href="#i-file"/></svg> Notes</a>
+      <a data-page="pastpapers"><svg class="icon"><use href="#i-filepdf"/></svg> Past Papers</a>
+    </nav>
+
+    <div class="nav-title">Community</div>
+    <nav class="nav">
+      <a data-page="forum"><svg class="icon"><use href="#i-horn"/></svg> Announcements</a>
+      <a data-page="career"><svg class="icon"><use href="#i-brief"/></svg> Career</a>
+      <a data-page="events"><svg class="icon"><use href="#i-calcheck"/></svg> Events</a>
+    </nav>
+
+    <button class="sidebar-logout" id="sidebarLogoutBtn"><svg class="icon"><use href="#i-logout"/></svg> Logout</button>
+
+    <div class="profile-mini" id="profileMiniBtn" style="cursor:pointer">
+      <div class="row"><div class="avatar" id="userAvatar">ST</div><div><b style="font-size:11px" id="userName">Student</b><small id="userRole">Student</small></div></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn mobile-toggle" id="sidebarToggle"><svg class="icon"><use href="#i-bars"/></svg></button>
+      <div class="search" id="searchWrap">
+        <svg class="icon"><use href="#i-search"/></svg>
+        <input id="search" placeholder="Search assignments or exams..." autocomplete="off">
+        <div class="search-results" id="searchResults" style="display:none"></div>
+      </div>
+      <div class="top-actions">
+        <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+          <span class="thumb"><svg class="icon icon-sun"><use href="#i-sun"/></svg><svg class="icon icon-moon"><use href="#i-moon"/></svg></span>
+        </button>
+        <button class="icon-btn notif" id="notifBtn"><svg class="icon"><use href="#i-bell"/></svg></button>
+        <button class="icon-btn hide-mobile" id="profileBtn"><svg class="icon"><use href="#i-user"/></svg></button>
+        <button class="btn btn-gold hide-mobile" id="logoutBtn"><svg class="icon sm" style="stroke:#fff"><use href="#i-logout"/></svg> Logout</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="page active">
+        <div class="hero">
+          <div><h1 id="greeting">Welcome</h1><p id="welcomeMsg">Enroll in courses, track progress, earn certificates.</p></div>
+        </div>
+        <div class="grid stats" id="dashStats">
+          <div class="stat"><div class="ico"><svg class="icon" id="dashIcon1"><use href="#i-book"/></svg></div><span id="dashLabel1">My Courses</span><b id="dashEnrolled">0</b><small class="trend" id="dashSub1">Enrolled</small></div>
+          <div class="stat"><div class="ico"><svg class="icon" id="dashIcon2"><use href="#i-check"/></svg></div><span id="dashLabel2">Completed</span><b id="dashCompleted">0</b><small class="trend" id="dashSub2">Courses</small></div>
+          <div class="stat"><div class="ico"><svg class="icon" id="dashIcon3"><use href="#i-cert"/></svg></div><span id="dashLabel3">Certificates</span><b id="dashCertificates">0</b><small class="trend" id="dashSub3">Earned</small></div>
+          <div class="stat"><div class="ico"><svg class="icon" id="dashIcon4"><use href="#i-clock"/></svg></div><span id="dashLabel4">Progress</span><b id="dashProgress">0%</b><small class="trend" id="dashSub4">Average</small></div>
+        </div>
+        <div class="grid layout-2" style="margin-top:20px">
+          <div class="panel"><div class="section-head" style="margin:0 0 10px"><div><h2 id="dashCoursesHeading">My Enrolled Courses</h2></div></div>
+            <div id="dashMyCourses" class="my-courses-grid"></div>
+          </div>
+          <div class="panel"><div class="section-head" style="margin:0 0 10px"><div><h2>Quick Actions</h2></div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <button class="btn btn-gold" data-go="students" data-roles="instructor,admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-users"/></svg> Students</button>
+              <button class="btn btn-outline-dark" data-go="diary" data-roles="admin"><svg class="icon sm"><use href="#i-book"/></svg> Daily Diary</button>
+              <button class="btn btn-outline-dark" data-go="exams" data-roles="instructor"><svg class="icon sm"><use href="#i-cal"/></svg> Exams</button>
+              <button class="btn btn-gold" data-go="assignments" data-roles="student"><svg class="icon sm" style="stroke:#fff"><use href="#i-pen"/></svg> Assignments</button>
+              <button class="btn btn-outline-dark" data-go="exams" data-roles="student"><svg class="icon sm"><use href="#i-cal"/></svg> Exams</button>
+              <button class="btn btn-outline-dark" data-go="assignments" data-roles="instructor,admin"><svg class="icon sm"><use href="#i-pen"/></svg> Assignments</button>
+              <button class="btn btn-outline-dark" data-go="results" data-roles="instructor,admin"><svg class="icon sm"><use href="#i-chart"/></svg> Results</button>
+            </div>
+            <div style="margin-top:14px;padding:12px;background:var(--warning-bg);border-radius:var(--radius-md);border-left:4px solid var(--warning-fg)">
+              <p style="font-size:11px;color:var(--warning-fg)"><svg class="icon sm"><use href="#i-bulb"/></svg> <b>Tip:</b> Complete all lessons to earn a certificate!</p>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:20px">
+          <div class="section-head" style="margin:0 0 10px"><div><h2>Recent Announcements</h2></div></div>
+          <div id="dashAnnouncements" class="my-courses-grid"></div>
+        </div>
+      </section>
+
+      <!-- MY COURSES (Student) / ALL COURSES (Admin) -->
+      <section id="mycourses" class="page">
+        <div class="section-head">
+          <div><h2 id="myCoursesHeading">My Courses</h2><p id="myCoursesSub">Enroll, learn, and earn certificates</p></div>
+          <button class="btn btn-gold" id="addCourseBtn" data-roles="admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Add Course</button>
+        </div>
+        <div class="grid cards-3" id="myCourseList"></div>
+      </section>
+
+      <!-- STUDENTS (Instructor/Admin) / CLASSMATES (Student) -->
+      <section id="students" class="page">
+        <div class="section-head"><div><h2 id="studentsHeading">Student Management</h2><p id="studentsSub">All enrolled students</p></div><button class="btn btn-gold" id="addStudentBtn" data-roles="admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Add Student</button></div>
+        <div class="panel diary-toolbar" id="studentFilterBar" data-roles="instructor,admin">
+          <div><label>Course</label><select id="stuFilterCourse"></select></div>
+          <div><label>Batch / Year</label><select id="stuFilterBatch"></select></div>
+        </div>
+        <div class="grid cards-3" id="studentList"></div>
+      </section>
+
+      <!-- LECTURES (Instructor/Student) / LECTURERS (Admin) -->
+      <section id="lectures" class="page">
+        <div class="section-head">
+          <div><h2 id="lecturesHeading">Lectures</h2><p id="lecturesSub">Scheduled lecture sessions by course</p></div>
+          <button class="btn btn-gold" id="addLecturerBtn" data-roles="admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Add Lecturer</button>
+        </div>
+        <div id="lectureList" class="grid cards-3"></div>
+      </section>
+
+      <!-- ATTENDANCE -->
+      <section id="attendance" class="page">
+        <div class="section-head"><div><h2 id="attendanceHeading">Attendance Sheet</h2><p>VTA Ninthavur &middot; Today: <b id="attToday"></b></p></div>
+          <div class="att-toolbar"><select id="attMonth"></select><button class="btn btn-gold" id="markAllPresentBtn" data-roles="admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-check"/></svg> All Present</button><button class="btn btn-outline-dark" id="printAttBtn"><svg class="icon sm"><use href="#i-download"/></svg> Export Excel</button></div>
+        </div>
+        <div class="panel diary-toolbar" id="attFilterBar" data-roles="admin">
+          <div><label>Course</label><select id="attFilterCourse"></select></div>
+          <div><label>Batch / Year</label><select id="attFilterBatch"></select></div>
+        </div>
+        <div class="panel">
+          <div class="month-tabs" id="monthTabs"></div>
+          <div class="legend"><span><i class="dot p"></i>P Present</span><span><i class="dot a"></i>A Absent</span><span><i class="dot l"></i>L Leave</span><span><i class="dot n"></i>&middot; Not marked</span><span id="attLegendClickHint"><b>Click cell</b> to cycle</span><span><i class="dot future"></i> Future (locked)</span></div>
+          <div class="att-summary"><div class="att-mini"><span>Present</span><b id="attPresent">0</b></div><div class="att-mini"><span>Absent</span><b id="attAbsent">0</b></div><div class="att-mini"><span>Leave</span><b id="attLeave">0</b></div><div class="att-mini"><span>Rate</span><b id="attRate">0%</b></div></div>
+          <div class="att-wrap"><table class="att-table" id="attendanceTable"></table></div>
+        </div>
+      </section>
+
+      <!-- DAILY DIARY -->
+      <section id="diary" class="page">
+        <div class="section-head"><div><h2>Instructor's Daily Diary</h2><p>DVTC &middot; Nintavur</p></div><button class="btn btn-outline-dark no-print" id="printDiaryBtn"><svg class="icon sm"><use href="#i-print"/></svg> Print / Export PDF</button></div>
+
+        <div class="panel diary-toolbar no-print" style="grid-template-columns:repeat(3,1fr)">
+          <div><label>Course</label><select id="dyCourse"></select></div>
+          <div><label>Date</label><input id="dyDate" type="date"></div>
+          <div data-roles="admin"><label>Batch</label><select id="dyBatch"></select></div>
+        </div>
+
+        <div class="panel diary-sheet" id="diarySheet">
+          <input type="hidden" id="dyId">
+          <div class="diary-sheet-head">
+            <h3 class="diary-sheet-kicker">INSTRUCTOR'S DAILY DIARY</h3>
+            <h2 id="dyBatchHeadline">DVTC - NINTAVUR - 2026 BATCH</h2>
+            <p id="dyQualBadge"></p>
+          </div>
+
+          <div class="diary-meta-row">
+            <div><label>Date:</label> <b id="dyMetaDate">-</b></div>
+            <div><label>Week:</label> <input id="dyWeek" placeholder=" "></div>
+            <div><label>Month:</label> <input id="dyMonthText" placeholder="e.g. August"></div>
+          </div>
+
+          <div class="diary-table-wrap">
+            <table class="diary-block-table">
+              <thead><tr><th class="col-time">Time</th><th class="col-module">Module</th><th class="col-task">Task</th><th class="col-subject">Subject Covered</th><th class="col-sign">Instructor Signature</th></tr></thead>
+              <tbody id="diaryBlock1Body"></tbody>
+            </table>
+          </div>
+
+          <div class="diary-lunch-divider">Lunch Time: 12.15 PM - 12.45 PM</div>
+
+          <div class="diary-table-wrap">
+            <table class="diary-block-table">
+              <thead><tr><th class="col-time">Time</th><th class="col-module">Module</th><th class="col-task">Task</th><th class="col-subject">Subject Covered</th><th class="col-sign">Instructor Signature</th></tr></thead>
+              <tbody id="diaryBlock2Body"></tbody>
+            </table>
+          </div>
+
+          <div class="diary-footer">
+            <div><label>Instructor Remarks :</label><input id="dyInstructorRemarks"></div>
+            <div><label>T/O Remarks :</label><input id="dyToRemarks"></div>
+            <div><label>T/O Signature :</label><input id="dyToSignature"></div>
+          </div>
+
+          <div class="no-print" style="margin-top:16px;display:flex;gap:8px">
+            <button class="btn btn-gold" id="saveDiaryBtn"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save</button>
+            <button class="btn btn-outline-light" id="clearDiaryBtn"><svg class="icon sm"><use href="#i-x"/></svg> New / Clear</button>
+          </div>
+        </div>
+
+        <div id="diaryPrintArea"></div>
+
+      </section>
+
+      <!-- ASSIGNMENTS -->
+      <section id="assignments" class="page">
+        <div class="section-head"><div><h2>Assignments</h2><p>Create &middot; Submit &middot; Mark &middot; Feedback</p></div><button class="btn btn-gold" id="addAssignmentBtn" data-roles="instructor,admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> New Assignment</button></div>
+        <div class="panel diary-toolbar" id="assignmentFilterBar" style="grid-template-columns:repeat(3,1fr)">
+          <div><label>Filter by Course</label><select id="asgFilterCourse"></select></div>
+          <div><label>Filter by Module</label><select id="asgFilterModule"></select></div>
+          <div data-roles="instructor,admin"><label>Filter by Batch</label><select id="asgFilterBatch"></select></div>
+        </div>
+        <div id="assignmentList" class="grid"></div>
+      </section>
+
+      <!-- RESULTS -->
+      <section id="results" class="page">
+        <div class="section-head"><div><h2 id="resultsHeading">Results</h2><p>Assignment &amp; exam marks by module</p></div></div>
+        <div class="panel diary-toolbar" style="grid-template-columns:repeat(3,1fr)">
+          <div><label>Course</label><select id="resFilterCourse"></select></div>
+          <div><label>Module</label><select id="resFilterModule"></select></div>
+          <div data-roles="instructor,admin"><label>Batch</label><select id="resFilterBatch"></select></div>
+        </div>
+        <div class="legend" style="margin:12px 0">
+          <span><i class="dot a"></i> Absent</span>
+          <span><i class="dot gold"></i> Pending (not yet marked)</span>
+          <span><i class="dot a"></i> Fail (below 40)</span>
+        </div>
+        <div class="panel table-wrap">
+          <table class="table" id="resultsModuleTable">
+            <thead><tr id="resultsModuleHead"><th>Student</th></tr></thead>
+            <tbody id="resultsModuleBody"><tr><td style="color:var(--muted)">Select a course to view results.</td></tr></tbody>
+            <tfoot id="resultsModuleFoot"></tfoot>
+          </table>
+        </div>
+      </section>
+
+      <!-- COURSE CATALOGUE -->
+      <section id="courses" class="page"><div class="section-head"><div><h2>Course Catalogue</h2><p>Browse all available courses</p></div></div><div class="grid cards-3" id="courseList"></div></section>
+
+      <!-- EXAMS -->
+      <section id="exams" class="page">
+        <div class="section-head"><div><h2>Exam Portal</h2><p>Open a window for students to upload their exam paper</p></div><button class="btn btn-gold" id="addExamBtn" data-roles="instructor,admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> New Exam</button></div>
+        <div class="panel diary-toolbar" id="examFilterBar" style="grid-template-columns:repeat(3,1fr)">
+          <div><label>Filter by Course</label><select id="exmFilterCourse"></select></div>
+          <div><label>Filter by Module</label><select id="exmFilterModule"></select></div>
+          <div data-roles="instructor,admin"><label>Filter by Batch</label><select id="exmFilterBatch"></select></div>
+        </div>
+        <div id="examList" class="grid"></div>
+      </section>
+
+      <!-- TIMETABLE -->
+      <section id="timetable" class="page">
+        <div class="section-head"><div><h2>Class Timetable</h2><p>Weekly module schedule by course</p></div><button class="btn btn-gold no-print" id="saveTimetableBtn" data-roles="admin" style="display:none"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save Timetable</button></div>
+        <div class="panel diary-toolbar">
+          <div><label>Course</label><select id="ttCourse"></select></div>
+        </div>
+        <div class="panel table-wrap">
+          <table class="table" id="timetableTable">
+            <thead><tr><th>Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th></tr></thead>
+            <tbody id="timetableBody"><tr><td style="color:var(--muted)">Select a course to view its timetable.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- NOTES -->
+      <section id="notes" class="page">
+        <div class="section-head"><div><h2>Notes</h2><p>Course notes uploaded by instructors</p></div><button class="btn btn-gold" id="addNoteBtn" data-roles="instructor,admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Upload Notes</button></div>
+        <div class="panel diary-toolbar">
+          <div><label>Course</label><select id="noteFilterCourse"></select></div>
+          <div><label>Module</label><select id="noteFilterModule"></select></div>
+        </div>
+        <div id="noteList" class="grid"></div>
+      </section>
+
+      <!-- PAST PAPERS -->
+      <section id="pastpapers" class="page">
+        <div class="section-head"><div><h2>Past Papers</h2><p>Past exam papers uploaded by instructors</p></div><button class="btn btn-gold" id="addPastPaperBtn" data-roles="instructor,admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Upload Past Paper</button></div>
+        <div class="panel diary-toolbar">
+          <div><label>Course</label><select id="ppFilterCourse"></select></div>
+          <div><label>Module</label><select id="ppFilterModule"></select></div>
+        </div>
+        <div id="pastPaperList" class="grid"></div>
+      </section>
+
+      <!-- MY CERTIFICATES -->
+      <section id="certificates" class="page">
+        <div class="section-head"><div><h2>My Certificates</h2><p>Earned upon course completion</p></div></div>
+        <div class="grid cards-3" id="myCertificatesList"></div>
+      </section>
+
+      <!-- ANNOUNCEMENTS -->
+      <section id="forum" class="page">
+        <div class="section-head"><div><h2>Announcements</h2><p>Posted by admin and instructors</p></div><button class="btn btn-gold" id="newThreadBtn" data-roles="instructor,admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> New Announcement</button></div>
+        <div class="panel forum" id="forumThreads"></div>
+        <div class="panel" id="threadDetail" style="display:none;margin-top:16px">
+          <button class="btn btn-outline-dark btn-sm" id="backToThreadsBtn"><svg class="icon sm"><use href="#i-back"/></svg> Back</button>
+          <h3 id="threadTitle" style="margin-top:12px"></h3>
+          <p id="threadBody" style="font-size:12px;color:var(--muted);margin-top:6px"></p>
+          <div id="threadReplies" style="margin-top:14px"></div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <input id="replyInput" placeholder="Write a reply..." style="flex:1;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--card);color:inherit">
+            <button class="btn btn-gold" id="sendReplyBtn"><svg class="icon sm" style="stroke:#fff"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CAREER -->
+      <section id="career" class="page">
+        <div class="section-head"><div><h2>Career Hub</h2></div><button class="btn btn-gold" id="addJobBtn" data-roles="instructor,admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Post Job</button></div>
+        <div class="grid career" id="careerList"></div>
+      </section>
+
+      <!-- EVENTS -->
+      <section id="events" class="page">
+        <div class="section-head"><div><h2>Events</h2></div><button class="btn btn-gold" id="addEventBtn" data-roles="admin"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> New Event</button></div>
+        <div class="grid cards-3" id="eventList"></div>
+      </section>
+
+      <!-- PROFILE -->
+      <section id="profile" class="page">
+        <div class="section-head"><div><h2>My Profile</h2><p>Manage your personal details and password</p></div></div>
+        <div class="grid layout-2">
+          <div class="panel">
+            <div style="text-align:center;margin-bottom:16px">
+              <img id="pfPhotoImg" class="avatar-lg" style="width:96px;height:96px;font-size:28px;display:none;margin:0 auto 10px;object-fit:cover">
+              <div id="pfPhotoInitials" class="avatar-lg" style="width:96px;height:96px;font-size:28px;margin:0 auto 10px"></div>
+              <input type="file" id="pfPhotoInput" accept="image/*" data-roles="student,instructor">
+            </div>
+
+            <label>Full Name</label><input id="pfName">
+            <label>Username (Email)</label><input id="pfEmail" disabled>
+
+            <div id="pfCourseWrap" style="display:none">
+              <label id="pfCourseLabel">Course</label><input id="pfCourse" disabled>
+            </div>
+            <div id="pfIdWrap" style="display:none">
+              <label id="pfIdLabel">ID</label><input id="pfIdValue" disabled>
+            </div>
+            <div id="pfModulesWrap" style="display:none">
+              <label>Modules</label><input id="pfModules" disabled>
+            </div>
+            <div id="pfNicWrap" style="display:none">
+              <label>NIC Number</label><input id="pfNic" disabled>
+            </div>
+
+            <button class="btn btn-gold" id="pfSaveBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save Changes</button>
+          </div>
+
+          <div class="panel">
+            <h3 style="font-size:14px;margin-bottom:14px">Change Password</h3>
+            <label>Current Password</label><input type="password" id="pfCurrentPass">
+            <label>New Password</label><input type="password" id="pfNewPass">
+            <label>Confirm New Password</label><input type="password" id="pfConfirmPass">
+            <button class="btn btn-outline-dark" id="pfChangePassBtn" style="margin-top:14px"><svg class="icon sm"><use href="#i-key"/></svg> Update Password</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<footer>&copy; 2026 <strong>VTA QS LMS</strong> &middot; Ninthavur &middot; Full Stack System</footer>
+
+<!-- MODALS -->
+<div class="modal" id="studentModal"><div class="modal-card">
+  <button class="close" id="closeStudentModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="studentModalTitle">Add Student</h3>
+  <input type="hidden" id="stId">
+  <label>Full Name</label><input id="stName" placeholder="e.g. A. Mohamed Ashfaak">
+  <label>Student MIS No.</label><input id="stMis" placeholder="e.g. MIS- JG/26/QS_L5V1/1/0014">
+  <label>NIC</label><input id="stNic" placeholder="e.g. 123456789V">
+  <label>Batch</label><input id="stBatch" placeholder="e.g. 2026">
+    <div id="stCourseWrap">
+    <label>Course</label><select id="stCourse"></select>
+  </div>
+  <div id="stCredentialsWrap">
+    <label>Username / Email</label><input id="stEmail" type="email" placeholder="student@vta.lk">
+    <label>Password</label><input id="stPassword" type="password" placeholder="Login password">
+  </div>
+  <label>Profile Picture</label><input id="stPhoto" type="file" accept="image/*">
+  <img id="stPhotoPreview" style="display:none;max-width:100px;border-radius:10px;margin-top:8px">
+  <button class="btn btn-gold" id="saveStudentBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save</button>
+</div></div>
+
+<div class="modal" id="lecturerModal"><div class="modal-card">
+  <button class="close" id="closeLecturerModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="lecturerModalTitle">Add Lecturer</h3>
+  <input type="hidden" id="lcrId">
+  <label>Full Name</label><input id="lcrName" placeholder="e.g. Eng. M. Rasheed">
+  <label>Lecturer ID</label><input id="lcrLecId" placeholder="e.g. LEC-001">
+  <label>Course</label><select id="lcrCourse"><option value="">-- Select course --</option></select>
+
+  <label>Modules</label>
+  <div id="lcrModulesList" class="module-list"></div>
+  <button type="button" class="btn btn-outline-dark btn-sm" id="lcrModulesAddBtn"><svg class="icon sm"><use href="#i-plus"/></svg> Add Module</button>
+
+  <div id="lcrNewFieldsWrap">
+    <label>Username / Email</label><input id="lcrEmail" type="email" placeholder="instructor@vta.lk">
+    <label>Password</label><input id="lcrPassword" type="password" placeholder="Login password">
+  </div>
+  <label>Profile Picture</label><input id="lcrPhoto" type="file" accept="image/*">
+  <img id="lcrPhotoPreview" style="display:none;max-width:100px;border-radius:10px;margin-top:8px">
+  <button class="btn btn-gold" id="saveLecturerBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save</button>
+</div></div>
+
+<div class="modal" id="courseModal"><div class="modal-card">
+  <button class="close" id="closeCourseModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="courseModalTitle">Add Course</h3>
+  <input type="hidden" id="crsId">
+  <label>Course Name</label><input id="crsName" placeholder="e.g. Quantity Surveying">
+  <label>Study Mode</label>
+  <select id="crsMode"><option value="Full Time">Full Time</option><option value="Part Time">Part Time</option></select>
+  <label>Qualification Type</label>
+  <select id="crsQualification"><option value="NVQ-05">NVQ-05</option><option value="Non-NVQ">Non-NVQ</option></select>
+  <label>Duration (months)</label><input id="crsDuration" type="number" min="1" max="60" placeholder="e.g. 6">
+  <label>Course Logo <small style="color:var(--muted)">(optional)</small></label>
+  <input id="crsLogo" type="file" accept="image/*">
+  <img id="crsLogoPreview" style="display:none;max-width:100px;max-height:100px;margin-top:8px;border-radius:10px;object-fit:cover">
+
+  <div id="crsNvqWrap">
+    <label>First Semester Modules</label>
+    <div id="crsSem1List" class="module-list"></div>
+    <button type="button" class="btn btn-outline-dark btn-sm" id="crsSem1AddBtn"><svg class="icon sm"><use href="#i-plus"/></svg> Add Module</button>
+
+    <label style="margin-top:12px">Second Semester Modules</label>
+    <div id="crsSem2List" class="module-list"></div>
+    <button type="button" class="btn btn-outline-dark btn-sm" id="crsSem2AddBtn"><svg class="icon sm"><use href="#i-plus"/></svg> Add Module</button>
+  </div>
+  <div id="crsModulesWrap" style="display:none">
+    <label>Modules</label>
+    <div id="crsModulesList" class="module-list"></div>
+    <button type="button" class="btn btn-outline-dark btn-sm" id="crsModulesAddBtn"><svg class="icon sm"><use href="#i-plus"/></svg> Add Module</button>
+  </div>
+
+  <label>Course Instructor</label><input id="crsInstructor" placeholder="e.g. Eng. M. Rasheed">
+  <button class="btn btn-gold" id="saveCourseBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save</button>
+</div></div>
+
+<div class="modal" id="courseDetailsModal"><div class="modal-card" style="max-width:600px">
+  <button class="close" id="closeCourseDetailsModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <div id="courseDetailsBody"></div>
+</div></div>
+
+
+<div class="modal" id="assignmentModal"><div class="modal-card">
+  <button class="close" id="closeAssignmentModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3>New Assignment</h3>
+  <label>Assignment Name</label><input id="asgTitle" placeholder="e.g. BOQ Preparation Exercise">
+  <label>Course</label><select id="asgCourse"></select>
+  <label>Module</label><select id="asgModule"></select>
+  <label>Batch</label><select id="asgBatch"></select>
+  <label>Start Date &amp; Time</label><input id="asgStart" type="datetime-local">
+  <label>End Date &amp; Time</label><input id="asgEnd" type="datetime-local">
+  <label>Instructions <small style="color:var(--muted)">(optional)</small></label><textarea id="asgInstructions" rows="3"></textarea>
+  <label>Attach PDF <small style="color:var(--muted)">(optional)</small></label><input id="asgFile" type="file" accept="application/pdf">
+  <button class="btn btn-gold" id="createAssignmentBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Create</button>
+</div></div>
+
+<div class="modal" id="editDeadlineModal"><div class="modal-card" style="max-width:380px">
+  <button class="close" id="closeEditDeadlineModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3>Edit End Date</h3>
+  <input type="hidden" id="eddAssignmentId">
+  <p id="eddAssignmentTitle" style="font-size:12px;color:var(--muted);margin-top:4px"></p>
+  <label style="margin-top:10px">New End Date &amp; Time</label><input id="eddEnd" type="datetime-local">
+  <button class="btn btn-gold" id="saveDeadlineBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save</button>
+</div></div>
+
+<div class="modal" id="submitModal"><div class="modal-card">
+  <button class="close" id="closeSubmitModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="submitModalTitle">Submit Assignment</h3>
+  <input type="hidden" id="subAssignmentId">
+  <label>Your Work <small style="color:var(--muted)">(PDF or image)</small></label><input id="subFile" type="file" accept="application/pdf,image/*">
+  <label>Note <small style="color:var(--muted)">(optional)</small></label><textarea id="subNote" rows="3" placeholder="Anything you'd like to add..."></textarea>
+  <button class="btn btn-gold" id="confirmSubmitBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-send"/></svg> Submit</button>
+</div></div>
+
+<div class="modal" id="examModal"><div class="modal-card">
+  <button class="close" id="closeExamModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3>New Exam</h3>
+  <label>Exam Title</label><input id="exmTitle" placeholder="e.g. Measurement & Quantification Midterm">
+  <label>Course</label><select id="exmCourse"></select>
+  <label>Module</label><select id="exmModule"></select>
+  <label>Batch</label><select id="exmBatch"></select>
+  <label>Start Date &amp; Time</label><input id="exmStart" type="datetime-local">
+  <label>End Date &amp; Time</label><input id="exmEnd" type="datetime-local">
+  <button class="btn btn-gold" id="createExamBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Open Exam Portal</button>
+</div></div>
+
+<div class="modal" id="examEditDeadlineModal"><div class="modal-card" style="max-width:380px">
+  <button class="close" id="closeExamEditDeadlineModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3>Edit End Time</h3>
+  <input type="hidden" id="eexExamId">
+  <p id="eexExamTitle" style="font-size:12px;color:var(--muted);margin-top:4px"></p>
+  <label style="margin-top:10px">New End Date &amp; Time</label><input id="eexEnd" type="datetime-local">
+  <button class="btn btn-gold" id="saveExamDeadlineBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save</button>
+</div></div>
+
+<div class="modal" id="examSubmitModal"><div class="modal-card">
+  <button class="close" id="closeExamSubmitModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="examSubmitModalTitle">Upload Exam Paper</h3>
+  <input type="hidden" id="exsExamId">
+  <label>Your Exam Paper <small style="color:var(--muted)">(PDF or image)</small></label><input id="exsFile" type="file" accept="application/pdf,image/*">
+  <button class="btn btn-gold" id="confirmExamSubmitBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-send"/></svg> Upload</button>
+</div></div>
+
+<div class="modal" id="submissionsModal"><div class="modal-card" style="max-width:820px">
+  <button class="close" id="closeSubmissionsModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="submissionsModalTitle">Submissions</h3>
+  <p id="submissionsModalMeta" style="font-size:12px;color:var(--muted);margin-top:4px"></p>
+  <div id="submissionsList" style="margin-top:14px;max-height:60vh;overflow:auto"></div>
+</div></div>
+
+<div class="modal" id="examSubmissionsModal"><div class="modal-card" style="max-width:820px">
+  <button class="close" id="closeExamSubmissionsModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="examSubmissionsModalTitle">Exam Papers</h3>
+  <p id="examSubmissionsModalMeta" style="font-size:12px;color:var(--muted);margin-top:4px"></p>
+  <div id="examSubmissionsList" style="margin-top:14px;max-height:60vh;overflow:auto"></div>
+</div></div>
+
+<div class="modal" id="resourceModal"><div class="modal-card">
+  <button class="close" id="closeResourceModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="resourceModalTitle">Upload Notes</h3>
+  <input type="hidden" id="resTypeField">
+  <label>Course</label><select id="resCourse"></select>
+  <label>Module</label><select id="resModule"></select>
+  <label>Year</label><input id="resUnitName" placeholder="e.g. 2025">
+  <label>Upload PDF</label><input id="resFile" type="file" accept="application/pdf">
+  <button class="btn btn-gold" id="saveResourceBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-upload"/></svg> Upload</button>
+</div></div>
+
+<div class="modal" id="eventModal"><div class="modal-card">
+  <button class="close" id="closeEventModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="eventModalTitle">New Event</h3>
+  <input type="hidden" id="evtId">
+  <label>Event Name</label><input id="evtName" placeholder="e.g. Annual Prize Giving">
+  <label>Event Location</label><input id="evtLocation" placeholder="e.g. Main Auditorium">
+  <label>Incharge of Event</label><input id="evtIncharge" placeholder="e.g. Mr. Perera">
+  <label>Event Date &amp; Time</label><input id="evtDate" type="datetime-local">
+  <label>Event Photos <small style="color:var(--muted)">(select one or more; uploading more adds to existing photos)</small></label>
+  <input id="evtPhotos" type="file" accept="image/*" multiple>
+  <label>Event PDF <small style="color:var(--muted)">(optional; replaces existing PDF)</small></label>
+  <input id="evtPdf" type="file" accept="application/pdf">
+  <button class="btn btn-gold" id="saveEventBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-save"/></svg> Save</button>
+</div></div>
+
+<div class="modal" id="filePreviewModal"><div class="modal-card" style="max-width:820px">
+  <button class="close" id="closeFilePreviewModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="filePreviewTitle">Preview</h3>
+  <div id="filePreviewBody" style="margin-top:12px;min-height:60vh"></div>
+  <a id="filePreviewDownload" class="btn btn-outline-dark" style="margin-top:12px;display:inline-flex" download><svg class="icon sm"><use href="#i-download"/></svg> Download</a>
+</div></div>
+
+<div class="modal" id="threadModal"><div class="modal-card">
+  <button class="close" id="closeThreadModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3 id="threadModalTitle">New Announcement</h3>
+  <input type="hidden" id="threadIdInput">
+  <label>Title</label><input id="threadTitleInput">
+  <label>Message</label><textarea id="threadBodyInput" rows="3"></textarea>
+  <button class="btn btn-gold" id="createThreadBtn"><svg class="icon sm" style="stroke:#fff"><use href="#i-send"/></svg> Post</button>
+</div></div>
+
+<div class="modal" id="jobModal"><div class="modal-card">
+  <button class="close" id="closeJobModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3>Post Job</h3>
+  <label>Title</label><input id="jobTitle">
+  <label>Type</label><select id="jobType"><option>Vacancy</option><option>Internship</option></select>
+  <label>Location</label><input id="jobLocation">
+  <label>Closing Date</label><input id="jobCloses" type="date">
+  <label>Description</label><textarea id="jobDescription" rows="3"></textarea>
+  <button class="btn btn-gold" id="postJobBtn"><svg class="icon sm" style="stroke:#fff"><use href="#i-plus"/></svg> Post</button>
+</div></div>
+
+<div class="modal" id="confirmModal"><div class="modal-card" style="max-width:380px">
+  <h3 id="confirmModalTitle">Please confirm</h3>
+  <p id="confirmModalMessage" style="font-size:12px;color:var(--muted);margin-top:6px"></p>
+  <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn btn-outline-dark btn-sm" id="confirmModalCancel">Cancel</button>
+    <button class="btn btn-red btn-sm" id="confirmModalOk">Confirm</button>
+  </div>
+</div></div>
+
+<div class="modal" id="dayActionModal"><div class="modal-card" style="max-width:340px">
+  <button class="close" id="closeDayActionModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3>Mark whole day</h3>
+  <p id="dayActionDate" style="font-size:12px;color:var(--muted);margin-top:6px"></p>
+  <p style="font-size:11px;color:var(--muted);margin-top:4px">Applies to every student for this date.</p>
+  <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+    <button class="btn btn-green" id="dayActionPresent"><svg class="icon sm" style="stroke:#fff"><use href="#i-check"/></svg> All Present</button>
+    <button class="btn btn-red" id="dayActionAbsent"><svg class="icon sm"><use href="#i-x"/></svg> All Absent</button>
+    <button class="btn btn-outline-dark" id="dayActionLeave"><svg class="icon sm"><use href="#i-clock"/></svg> All Leave</button>
+  </div>
+</div></div>
+
+<div class="modal" id="diaryPrintRangeModal"><div class="modal-card" style="max-width:380px">
+  <button class="close" id="closeDiaryPrintRangeModal"><svg class="icon"><use href="#i-x"/></svg></button>
+  <h3>Print / Export Diary</h3>
+  <p style="font-size:12px;color:var(--muted);margin-top:4px">Generates one A4 page per day in this range for the selected course.</p>
+  <label>Start Date</label><input id="dyPrintStart" type="date">
+  <label>End Date</label><input id="dyPrintEnd" type="date">
+  <button class="btn btn-gold" id="dyPrintGenerateBtn" style="margin-top:14px"><svg class="icon sm" style="stroke:#fff"><use href="#i-print"/></svg> Generate</button>
+</div></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

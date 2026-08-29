@@ -122,6 +122,15 @@ function resetSessionCaches() {
   currentDiaryBatch = '';
 }
 
+document.getElementById('loginPassToggle').addEventListener('click', () => {
+  const input = document.getElementById('loginPass');
+  const btn = document.getElementById('loginPassToggle');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.querySelector('use').setAttribute('href', showing ? '#i-eye' : '#i-eye-off');
+  btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+});
+
 withLoadingClick('loginBtn', async () => {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPass').value;

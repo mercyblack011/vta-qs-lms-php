@@ -1,3 +1,7 @@
 RewriteEngine On
 
+<FilesMatch "^(\.env.*|schema\.sql)$">
+  Require all denied
+</FilesMatch>
+
 RewriteRule ^api/(.*)$ api/index.php [QSA,L]

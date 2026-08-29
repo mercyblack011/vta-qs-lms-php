@@ -83,9 +83,8 @@ code, .mono { font-family: var(--font-mono); }
 
 .brand { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: 5px 6px 22px; border-bottom: 1px solid rgba(255,255,255,0.09); margin-bottom: 6px; }
 .brand b { font-size: 14.5px; font-family: var(--font-display); letter-spacing: -0.01em; } .brand small { display: block; color: #AC8F96; font-size: 10.5px; margin-top: 2px; }
-.brand-logo-img { background: #fff; border-radius: var(--radius-md); padding: 6px 55px; display: inline-flex; align-items: center; box-shadow: 0 6px 18px rgba(142,27,60,0.4); }
-.brand .brand-logo-img img { display: block; height: 40px; width: 110px; }
-.login-box .brand-logo-img { padding: 10px 16px; box-shadow: none; border: 1px solid var(--border-subtle); }
+.brand-logo-img { display: inline-flex; align-items: center; }
+.brand .brand-logo-img img { display: block; height: 55px; width: 220px; border-radius: 10px; }
 .login-box .brand-logo-img img { height: 42px; width: auto; }
 
 .nav-title { display: flex; align-items: center; gap: 6px; text-transform: uppercase; font-size: 10px; letter-spacing: 1.4px; color: #8C7278; margin: 20px 8px 8px; font-weight: 700; }
@@ -507,8 +506,8 @@ footer strong { color: var(--accent); }
      Exams, etc.) are unaffected. */
   #diary .diary-toolbar { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
 
-  .brand-logo-img{
-    padding: 6px 36px;
+  .brand .brand-logo-img img{
+    width: 180px;
   }
 }
 @media print { .sidebar,.topbar,footer,.hero-actions,.section-head button,.att-toolbar,.month-tabs,.diary-actions{display:none!important} .main{margin:0;width:100%} .page{display:none!important} .page.active{display:block!important} .content{padding:0} .panel{box-shadow:none;border:0} }

@@ -16,6 +16,67 @@ function assetUrl(path) {
   return path ? BASE_PATH + path : path;
 }
 
+// ========== FILE DOWNLOADS ==========
+// Android's WebView has no built-in download handling, so an <a download> click (which
+// works fine in a real browser) silently does nothing inside the Capacitor app. When
+// running natively, files are instead fetched as a blob and handed to the native
+// AndroidDownloader bridge (see MainActivity.java) with the real file name, since a
+// bare download link only exposes the server's randomized stored filename.
+function isNativeApp() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
+function saveBlob(blob, filename) {
+  if (isNativeApp()) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = String(reader.result).split(',')[1] || '';
+      if (window.AndroidDownloader) window.AndroidDownloader.saveBase64(base64, filename || 'download', blob.type || 'application/octet-stream');
+    };
+    reader.readAsDataURL(blob);
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
+async function downloadFile(url, filename) {
+  if (!url) return;
+  if (!isNativeApp()) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || '';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Download failed (${res.status})`);
+    saveBlob(await res.blob(), filename);
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+// Wires every [data-download-file] button inside a freshly-rendered container to
+// downloadFile(), reading the real filename from data-download-name.
+function wireDownloadButtons(container) {
+  container.querySelectorAll('[data-download-file]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      downloadFile(btn.dataset.downloadFile, btn.dataset.downloadName);
+    });
+  });
+}
+
 // ========== API HELPER ==========
 async function api(path, { method = 'GET', body } = {}) {
   const headers = {};
@@ -2010,15 +2071,8 @@ function buildAttendanceXlsxBlob() {
 
 function exportAttendanceToExcel() {
   const blob = buildAttendanceXlsxBlob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
   const monthLabel = `${monthNames[attCurrentMonth]}-${attCurrentYear}`;
-  a.href = url;
-  a.download = `Attendance-${monthLabel}.xlsx`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  saveBlob(blob, `Attendance-${monthLabel}.xlsx`);
 }
 
 // ========== DAILY DIARY ==========
@@ -2387,6 +2441,49 @@ function assignmentStatus(a) {
   return { label: 'Open', cls: 'green' };
 }
 
+// Android's WebView has no built-in PDF renderer (unlike a real browser), so an
+// <iframe src="a.pdf"> just falls through to the native download handler instead of
+// showing the PDF. Rendering pages to <canvas> with PDF.js works identically on web
+// and in the app since it's pure JS with no dependency on the platform's PDF support.
+let pdfjsLoadPromise = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (!pdfjsLoadPromise) {
+    pdfjsLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.onload = () => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        resolve(window.pdfjsLib);
+      };
+      script.onerror = () => reject(new Error('Could not load the PDF viewer'));
+      document.head.appendChild(script);
+    });
+  }
+  return pdfjsLoadPromise;
+}
+
+async function renderPdfPreview(fileUrl, container) {
+  container.innerHTML = '<div class="no-file">Loading PDF&hellip;</div>';
+  try {
+    const pdfjsLib = await loadPdfJs();
+    const pdf = await pdfjsLib.getDocument(fileUrl).promise;
+    container.innerHTML = '<div class="pdf-pages"></div>';
+    const pagesBox = container.querySelector('.pdf-pages');
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      pagesBox.appendChild(canvas);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    }
+  } catch (e) {
+    container.innerHTML = `<div class="no-file">Could not load preview: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
 function openFilePreview(fileUrl, fileName, title) {
   document.getElementById('filePreviewTitle').textContent = title || fileName || 'Preview';
   const body = document.getElementById('filePreviewBody');
@@ -2396,15 +2493,22 @@ function openFilePreview(fileUrl, fileName, title) {
     downloadLink.style.display = 'none';
   } else {
     const isPdf = /\.pdf($|\?)/i.test(fileUrl) || (fileName && /\.pdf$/i.test(fileName));
-    body.innerHTML = isPdf
-      ? `<iframe src="${fileUrl}"></iframe>`
-      : `<img src="${fileUrl}" alt="${escapeHtml(fileName || 'preview')}">`;
-    downloadLink.href = fileUrl;
-    downloadLink.setAttribute('download', fileName || '');
+    if (isPdf) {
+      renderPdfPreview(fileUrl, body);
+    } else {
+      body.innerHTML = `<img src="${fileUrl}" alt="${escapeHtml(fileName || 'preview')}">`;
+    }
+    downloadLink.dataset.downloadFile = fileUrl;
+    downloadLink.dataset.downloadName = fileName || '';
     downloadLink.style.display = 'inline-flex';
   }
   openModal('filePreviewModal');
 }
+document.getElementById('filePreviewDownload').addEventListener('click', (e) => {
+  e.preventDefault();
+  const el = e.currentTarget;
+  downloadFile(el.dataset.downloadFile, el.dataset.downloadName);
+});
 
 let myLecturerRowsCache = null;
 async function getMyLecturerRows() {
@@ -2550,7 +2654,7 @@ async function openSubmissionsModal(assignmentId, title) {
         ${s.note ? `<p style="font-size:11px;color:var(--muted);margin-top:6px">${escapeHtml(s.note)}</p>` : ''}
         <div class="grade-row">
           <button class="btn btn-outline-dark btn-sm" data-preview-file="${assetUrl(s.file_path) || ''}" data-preview-name="${escapeHtml(s.file_name || '')}" data-preview-title="${escapeHtml(s.student_name)}'s Submission"><svg class="icon sm"><use href="#i-eye"/></svg> Preview</button>
-          <a class="btn btn-outline-dark btn-sm" href="${assetUrl(s.file_path) || ''}" download="${escapeHtml(s.file_name || '')}"><svg class="icon sm"><use href="#i-download"/></svg> Download</a>
+          <button class="btn btn-outline-dark btn-sm" data-download-file="${assetUrl(s.file_path) || ''}" data-download-name="${escapeHtml(s.file_name || '')}"><svg class="icon sm"><use href="#i-download"/></svg> Download</button>
           <input class="grade-input" placeholder="Grade" value="${escapeHtml(s.grade || '')}" data-grade-for="${s.id}">
           <input class="feedback-input" placeholder="Feedback" value="${escapeHtml(s.feedback || '')}" data-feedback-for="${s.id}">
           <button class="btn btn-gold btn-sm" data-save-grade="${s.id}"><svg class="icon sm"><use href="#i-check"/></svg> Save</button>
@@ -2561,6 +2665,7 @@ async function openSubmissionsModal(assignmentId, title) {
     box.querySelectorAll('[data-preview-file]').forEach(btn => {
       btn.addEventListener('click', () => openFilePreview(btn.dataset.previewFile, btn.dataset.previewName, btn.dataset.previewTitle));
     });
+    wireDownloadButtons(box);
     box.querySelectorAll('[data-save-grade]').forEach(btn => {
       withLoadingClick(btn, async () => {
         const subId = btn.dataset.saveGrade;
@@ -2837,7 +2942,7 @@ async function openExamSubmissionsModal(examId, title) {
         </div>
         <div class="grade-row">
           <button class="btn btn-outline-dark btn-sm" data-preview-file="${assetUrl(s.file_path) || ''}" data-preview-name="${escapeHtml(s.file_name || '')}" data-preview-title="${escapeHtml(s.student_name)}'s Exam Paper"><svg class="icon sm"><use href="#i-eye"/></svg> Preview</button>
-          <a class="btn btn-outline-dark btn-sm" href="${assetUrl(s.file_path) || ''}" download="${escapeHtml(s.file_name || '')}"><svg class="icon sm"><use href="#i-download"/></svg> Download</a>
+          <button class="btn btn-outline-dark btn-sm" data-download-file="${assetUrl(s.file_path) || ''}" data-download-name="${escapeHtml(s.file_name || '')}"><svg class="icon sm"><use href="#i-download"/></svg> Download</button>
           <input class="grade-input" placeholder="Grade" value="${escapeHtml(s.grade || '')}" data-grade-for="${s.id}">
           <input class="feedback-input" placeholder="Feedback" value="${escapeHtml(s.feedback || '')}" data-feedback-for="${s.id}">
           <button class="btn btn-gold btn-sm" data-save-grade="${s.id}"><svg class="icon sm"><use href="#i-check"/></svg> Save</button>
@@ -2848,6 +2953,7 @@ async function openExamSubmissionsModal(examId, title) {
     box.querySelectorAll('[data-preview-file]').forEach(btn => {
       btn.addEventListener('click', () => openFilePreview(btn.dataset.previewFile, btn.dataset.previewName, btn.dataset.previewTitle));
     });
+    wireDownloadButtons(box);
     box.querySelectorAll('[data-save-grade]').forEach(btn => {
       withLoadingClick(btn, async () => {
         const subId = btn.dataset.saveGrade;
@@ -3269,7 +3375,7 @@ async function renderResourceList(type) {
       <div class="meta"><svg class="icon sm"><use href="#i-user"/></svg> ${escapeHtml(r.uploaded_by_name || '')} &middot; <svg class="icon sm"><use href="#i-cal"/></svg> ${formatDateTime(r.created_at)}</div>
       <div class="actions">
         <button class="btn btn-outline-dark btn-sm" data-preview-file="${assetUrl(r.file_path)}" data-preview-name="${escapeHtml(r.file_name)}" data-preview-title="${escapeHtml(r.unit_name)}"><svg class="icon sm"><use href="#i-eye"/></svg> Preview</button>
-        <a class="btn btn-outline-dark btn-sm" href="${assetUrl(r.file_path)}" download="${escapeHtml(r.file_name)}"><svg class="icon sm"><use href="#i-download"/></svg> Download</a>
+        <button class="btn btn-outline-dark btn-sm" data-download-file="${assetUrl(r.file_path)}" data-download-name="${escapeHtml(r.file_name)}"><svg class="icon sm"><use href="#i-download"/></svg> Download</button>
         ${r.can_delete ? `<button class="btn btn-red btn-sm" data-del-resource="${r.id}"><svg class="icon sm"><use href="#i-trash"/></svg> Remove</button>` : ''}
       </div>
     </div>
@@ -3278,6 +3384,7 @@ async function renderResourceList(type) {
   container.querySelectorAll('[data-preview-file]').forEach(btn => {
     btn.addEventListener('click', () => openFilePreview(btn.dataset.previewFile, btn.dataset.previewName, btn.dataset.previewTitle));
   });
+  wireDownloadButtons(container);
   container.querySelectorAll('[data-del-resource]').forEach(btn => {
     withLoadingClick(btn, async () => {
       if (!(await confirmDialog('Remove this file?', { title: 'Remove file?', confirmText: 'Remove' }))) return;
@@ -3626,7 +3733,7 @@ async function renderEvents() {
       <div class="actions" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
         ${ev.pdf_path ? `
           <button class="btn btn-outline-dark btn-sm" data-preview-file="${assetUrl(ev.pdf_path)}" data-preview-name="${escapeHtml(ev.pdf_name || '')}" data-preview-title="${escapeHtml(ev.name)}"><svg class="icon sm"><use href="#i-eye"/></svg> View PDF</button>
-          <a class="btn btn-outline-dark btn-sm" href="${assetUrl(ev.pdf_path)}" download="${escapeHtml(ev.pdf_name || '')}"><svg class="icon sm"><use href="#i-download"/></svg> Download</a>
+          <button class="btn btn-outline-dark btn-sm" data-download-file="${assetUrl(ev.pdf_path)}" data-download-name="${escapeHtml(ev.pdf_name || '')}"><svg class="icon sm"><use href="#i-download"/></svg> Download</button>
         ` : ''}
         ${isAdmin ? `
           <button class="btn btn-outline-dark btn-sm" data-edit-event="${ev.id}"><svg class="icon sm"><use href="#i-edit"/></svg> Edit</button>
@@ -3639,6 +3746,7 @@ async function renderEvents() {
   container.querySelectorAll('[data-preview-file]').forEach(el => {
     el.addEventListener('click', () => openFilePreview(el.dataset.previewFile, el.dataset.previewName || '', el.dataset.previewTitle));
   });
+  wireDownloadButtons(container);
   container.querySelectorAll('[data-edit-event]').forEach(btn => {
     btn.addEventListener('click', () => {
       const ev = eventsCache.find(e => e.id === Number(btn.dataset.editEvent));

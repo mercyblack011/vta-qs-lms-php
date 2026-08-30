@@ -1,5 +1,7 @@
 RewriteEngine On
 
+ErrorDocument 404 /404.html
+
 <FilesMatch "^(\.env.*|schema\.sql)$">
   Require all denied
 </FilesMatch>

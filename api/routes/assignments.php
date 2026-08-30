@@ -110,6 +110,21 @@ if ($method === 'POST' && $segments === []) {
     json_response(['assignment' => $assignment], 201);
 }
 
+if ($method === 'DELETE' && count($segments) === 1 && ctype_digit($segments[0])) {
+    $me = require_auth();
+    require_role($me, 'instructor', 'admin');
+    $assignment = query('SELECT * FROM assignments WHERE id = ?', [$segments[0]])[0] ?? null;
+    if (!$assignment) error_response('Assignment not found', 404);
+    if (!can_manage_assignment($me, $assignment)) {
+        error_response('You can only delete assignments for a course and module you are assigned to teach.', 403);
+    }
+    $subFiles = query('SELECT file_path FROM submissions WHERE assignment_id = ?', [$assignment['id']]);
+    run('DELETE FROM assignments WHERE id = ?', [$assignment['id']]);
+    if ($assignment['file_path']) delete_uploaded_file($assignment['file_path']);
+    foreach ($subFiles as $s) delete_uploaded_file($s['file_path']);
+    json_response(['message' => 'Assignment removed']);
+}
+
 if ($method === 'PUT' && count($segments) === 2 && ctype_digit($segments[0]) && $segments[1] === 'deadline') {
     $me = require_auth();
     require_role($me, 'instructor', 'admin');

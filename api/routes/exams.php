@@ -104,6 +104,20 @@ if ($method === 'POST' && $segments === []) {
     json_response(['exam' => $exam], 201);
 }
 
+if ($method === 'DELETE' && count($segments) === 1 && ctype_digit($segments[0])) {
+    $me = require_auth();
+    require_role($me, 'instructor', 'admin');
+    $exam = query('SELECT * FROM exams WHERE id = ?', [$segments[0]])[0] ?? null;
+    if (!$exam) error_response('Exam not found', 404);
+    if (!can_manage_exam($me, $exam)) {
+        error_response('You can only delete exams for a course and module you are assigned to teach.', 403);
+    }
+    $subFiles = query('SELECT file_path FROM exam_submissions WHERE exam_id = ?', [$exam['id']]);
+    run('DELETE FROM exams WHERE id = ?', [$exam['id']]);
+    foreach ($subFiles as $s) delete_uploaded_file($s['file_path']);
+    json_response(['message' => 'Exam removed']);
+}
+
 if ($method === 'PUT' && count($segments) === 2 && ctype_digit($segments[0]) && $segments[1] === 'deadline') {
     $me = require_auth();
     require_role($me, 'instructor', 'admin');

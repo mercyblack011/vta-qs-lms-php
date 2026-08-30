@@ -2683,6 +2683,7 @@ async function renderAssignments() {
       actionParts.push(`<button class="btn btn-outline-dark btn-sm" data-view-subs="${a.id}" data-title="${escapeHtml(a.title)}"><svg class="icon sm"><use href="#i-list"/></svg> View Submissions (${a.submission_count})</button>`);
       if (a.file_path) actionParts.push(`<button class="btn btn-outline-dark btn-sm" data-preview-file="${assetUrl(a.file_path)}" data-preview-name="${escapeHtml(a.file_name || '')}" data-preview-title="${escapeHtml(a.title)}"><svg class="icon sm"><use href="#i-eye"/></svg> Preview Attachment</button>`);
       if (a.can_edit_deadline) actionParts.push(`<button class="btn btn-outline-dark btn-sm" data-edit-deadline="${a.id}" data-title="${escapeHtml(a.title)}" data-end="${a.end_at || ''}"><svg class="icon sm"><use href="#i-clock"/></svg> Edit End Date</button>`);
+      if (a.can_edit_deadline) actionParts.push(`<button class="btn btn-red btn-sm" data-del-assignment="${a.id}" data-title="${escapeHtml(a.title)}"><svg class="icon sm"><use href="#i-trash"/></svg> Delete</button>`);
     }
 
     return `<div class="assignment-item" data-assignment-id="${a.id}">
@@ -2722,6 +2723,16 @@ async function renderAssignments() {
   });
   container.querySelectorAll('[data-view-subs]').forEach(btn => {
     btn.addEventListener('click', () => openSubmissionsModal(btn.dataset.viewSubs, btn.dataset.title));
+  });
+  container.querySelectorAll('[data-del-assignment]').forEach(btn => {
+    withLoadingClick(btn, async () => {
+      if (!(await confirmDialog(`Delete "${btn.dataset.title}"? This also removes all student submissions for it.`, { title: 'Delete assignment?', confirmText: 'Delete' }))) return;
+      try {
+        await api(`/assignments/${btn.dataset.delAssignment}`, { method: 'DELETE' });
+        toast('Assignment removed', 'success');
+        renderAssignments();
+      } catch (e) { toast(e.message, 'error'); }
+    });
   });
 }
 
@@ -2957,6 +2968,7 @@ async function renderExams() {
     } else {
       actionParts.push(`<button class="btn btn-outline-dark btn-sm" data-exam-view-subs="${a.id}" data-title="${escapeHtml(a.title)}"><svg class="icon sm"><use href="#i-list"/></svg> View Papers (${a.submission_count})</button>`);
       if (a.can_edit_deadline) actionParts.push(`<button class="btn btn-outline-dark btn-sm" data-exam-edit-deadline="${a.id}" data-title="${escapeHtml(a.title)}" data-end="${a.end_at || ''}"><svg class="icon sm"><use href="#i-clock"/></svg> Edit End Time</button>`);
+      if (a.can_edit_deadline) actionParts.push(`<button class="btn btn-red btn-sm" data-del-exam="${a.id}" data-title="${escapeHtml(a.title)}"><svg class="icon sm"><use href="#i-trash"/></svg> Delete</button>`);
     }
 
     return `<div class="assignment-item" data-exam-id="${a.id}">
@@ -2994,6 +3006,16 @@ async function renderExams() {
   });
   container.querySelectorAll('[data-exam-view-subs]').forEach(btn => {
     btn.addEventListener('click', () => openExamSubmissionsModal(btn.dataset.examViewSubs, btn.dataset.title));
+  });
+  container.querySelectorAll('[data-del-exam]').forEach(btn => {
+    withLoadingClick(btn, async () => {
+      if (!(await confirmDialog(`Delete "${btn.dataset.title}"? This also removes all student uploads for it.`, { title: 'Delete exam?', confirmText: 'Delete' }))) return;
+      try {
+        await api(`/exams/${btn.dataset.delExam}`, { method: 'DELETE' });
+        toast('Exam removed', 'success');
+        renderExams();
+      } catch (e) { toast(e.message, 'error'); }
+    });
   });
 }
 
@@ -3443,7 +3465,10 @@ async function renderForum() {
     <div class="thread" data-thread="${t.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
         <b>${escapeHtml(t.title)}</b>
-        ${t.can_edit ? `<button class="btn btn-outline-dark btn-sm" data-edit-thread="${t.id}" style="flex:0 0 auto"><svg class="icon sm"><use href="#i-edit"/></svg> Edit</button>` : ''}
+        <div style="display:flex;gap:6px;flex:0 0 auto">
+          ${t.can_edit ? `<button class="btn btn-outline-dark btn-sm" data-edit-thread="${t.id}"><svg class="icon sm"><use href="#i-edit"/></svg> Edit</button>` : ''}
+          ${t.can_edit ? `<button class="btn btn-red btn-sm" data-del-thread="${t.id}" data-title="${escapeHtml(t.title)}"><svg class="icon sm"><use href="#i-trash"/></svg> Delete</button>` : ''}
+        </div>
       </div>
       <p>Posted by ${escapeHtml(t.author_name)} &middot; ${t.reply_count} replies</p>
     </div>
@@ -3458,6 +3483,17 @@ async function renderForum() {
       document.getElementById('threadTitleInput').value = t.title;
       document.getElementById('threadBodyInput').value = t.body || '';
       openModal('threadModal');
+    });
+  });
+  box.querySelectorAll('[data-del-thread]').forEach(btn => {
+    withLoadingClick(btn, async (e) => {
+      e.stopPropagation();
+      if (!(await confirmDialog(`Delete "${btn.dataset.title}"? This also removes all its replies.`, { title: 'Delete announcement?', confirmText: 'Delete' }))) return;
+      try {
+        await api(`/forum/threads/${btn.dataset.delThread}`, { method: 'DELETE' });
+        toast('Announcement removed', 'success');
+        renderForum();
+      } catch (err) { toast(err.message, 'error'); }
     });
   });
 }

@@ -46,6 +46,16 @@ if ($method === 'PUT' && count($segments) === 2 && $segments[0] === 'threads' &&
     json_response(['thread' => $updated]);
 }
 
+if ($method === 'DELETE' && count($segments) === 2 && $segments[0] === 'threads' && ctype_digit($segments[1])) {
+    $me = require_auth();
+    require_role($me, 'instructor', 'admin');
+    $thread = query('SELECT * FROM forum_threads WHERE id = ?', [$segments[1]])[0] ?? null;
+    if (!$thread) error_response('Announcement not found', 404);
+    if (!can_edit_thread($me, $thread)) error_response('You can only delete announcements you created', 403);
+    run('DELETE FROM forum_threads WHERE id = ?', [$thread['id']]);
+    json_response(['message' => 'Announcement removed']);
+}
+
 if ($method === 'GET' && count($segments) === 3 && $segments[0] === 'threads' && ctype_digit($segments[1]) && $segments[2] === 'replies') {
     require_auth();
     $rows = query('
